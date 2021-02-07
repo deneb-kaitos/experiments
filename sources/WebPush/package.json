@@ -1,0 +1,19 @@
+{
+  "name": "@deneb-kaitos/experiments-web-push",
+  "version": "0.0.0",
+  "description": "Web Push Experiment",
+  "engines": {
+    "node": "=15.8.0",
+    "pnpm": "=5.16.1"
+  },
+  "engineStrict": true,
+  "volta": {
+    "node": "15.8.0"
+  },
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dmitry N. Medvedev <dmitry.medvedev@gmail.com>",
+  "license": "MIT"
+}
