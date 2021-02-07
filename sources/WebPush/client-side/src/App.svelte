@@ -1,5 +1,9 @@
 <script>
   import SendIcon from './icons/SendIcon.svelte';
+
+  const handleSubmit = () => {
+    console.debug('handleSubmit');
+  };
 </script>
 
 <style>
@@ -79,16 +83,15 @@
     border: 1px solid transparent;
   }
 
-  .submit:active,
-  .submit:focus {
-    background-color: hsl(0deg 74% 50%);
-    box-shadow: inset 0px 0px 10px 10px hsl(0deg 74% 46%);
-    border: 1px solid hsl(0deg 74% 16%);
+  .submit:active {
+    background-color: hsl(33deg 79% 66%);
+    box-shadow: inset 0px 0px 10px 10px hsl(33deg 79% 60%);
+    border: 1px solid hsl(33deg 79% 36%);
   }
 </style>
 
 <main>
-  <form id='web-push-experiment-form'>
+  <form id='web-push-experiment-form' on:submit|preventDefault|stopPropagation={handleSubmit}>
     <label for='web-push-experiment-form'>Web Push Experiment</label>
     <div class='row'>
       <textarea
