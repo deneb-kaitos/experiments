@@ -1,19 +1,16 @@
-* {
-  pointer-events: none;
-  user-select: none;
-}
-
 html, body {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  justify-content: flex-start;
   align-items: stretch;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  position: relative;
+  user-select: none;
+  width: 100%;
 }
 
 html {
