@@ -1,0 +1,34 @@
+{
+  "name": "@deneb-kaitos/experiments",
+  "version": "0.0.0",
+  "description": "Deneb Kaitos Experiments",
+  "engines": {
+    "node": "=15.8.0",
+    "pnpm": "=5.16.1"
+  },
+  "engineStrict": true,
+  "volta": {
+    "node": "15.8.0"
+  },
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "clean-install": "pnpm --recursive exec -- rm -rf node_modules && pnpm --recursive install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deneb-kaitos/experiments.git"
+  },
+  "author": "Dmitry N. Medvedev <dmitry.medvedev@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deneb-kaitos/experiments/issues"
+  },
+  "homepage": "https://github.com/deneb-kaitos/experiments#readme",
+  "devDependencies": {
+    "@babel/core": "^7.12.13",
+    "@babel/eslint-parser": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.19.0"
+  }
+}
