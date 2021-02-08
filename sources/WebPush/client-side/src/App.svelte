@@ -1,9 +1,67 @@
 <script>
+  import {
+    onMount,
+  } from 'svelte';
   import SendIcon from './icons/SendIcon.svelte';
+  import {
+    PermissionResults,
+  } from './constants/PermissionResults.mjs';
+  import {
+    ApplicationServerKeys,
+  } from './constants/ApplicationServerKeys.mjs';
+  import {
+    urlBase64ToUint8Array,
+  } from './helpers/urlBase64ToUint8Array.mjs';
+
+  export let isServiceWorker = false;
+  let shouldEnableControls = true;
+  let swRegistration = null;
+  let permissionResult = null;
+  let subscriptionResult = null;
+
+
+  $: if (subscriptionResult) {
+    console.log('subscriptionResult:', subscriptionResult);
+  }
+
+  $: if (permissionResult === PermissionResults.granted) {
+    subscribeToPushNotifications();
+  }
+
+  $: shouldEnableControls = isServiceWorker && swRegistration && permissionResult === PermissionResults.granted;
+
+  $: if (swRegistration !== null) {
+    console.debug('swRegistration:', swRegistration);
+
+    askForPermission();
+  }
+
+  const subscribeToPushNotifications = async () => {
+    const subscribeOptions = {
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(ApplicationServerKeys.pk),
+    };
+
+    subscriptionResult = await swRegistration.pushManager.subscribe(subscribeOptions) ?? null;
+  };
+
+  const registerServiceWorker = async () => {
+    return navigator.serviceWorker.register('/service-worker.mjs');
+  };
+
+  const askForPermission = async () => {
+    permissionResult = await Notification.requestPermission();
+  };
 
   const handleSubmit = () => {
     console.debug('handleSubmit');
   };
+
+  onMount(async () => {
+    if (isServiceWorker === true) {
+      swRegistration = await registerServiceWorker();
+    }
+  });
 </script>
 
 <style>
@@ -92,7 +150,7 @@
 
 <main>
   <form id='web-push-experiment-form' on:submit|preventDefault|stopPropagation={handleSubmit}>
-    <label for='web-push-experiment-form'>Web Push Experiment</label>
+    <label for='web-push-experiment-form'>Web Push Experiment {shouldEnableControls === false ? 'impossible' : ''}</label>
     <div class='row'>
       <textarea
         class='message'
@@ -102,10 +160,17 @@
         required
         rows='10'
         type='text'
+        disabled={shouldEnableControls === false}
       ></textarea>
     </div>
     <div class='row'>
-      <button type='submit' class='submit'><SendIcon /></button>
+      <button
+        type='submit'
+        class='submit'
+        disabled={shouldEnableControls === false}
+      >
+        <SendIcon />
+      </button>
     </div>
   </form>
 </main>

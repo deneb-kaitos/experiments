@@ -9,9 +9,10 @@
   "volta": {
     "node": "15.8.0"
   },
+  "module": "src/main.mjs",
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w --host 0.0.0.0",
+    "dev": "rollup -c -w",
     "start": "sirv public"
   },
   "dependencies": {

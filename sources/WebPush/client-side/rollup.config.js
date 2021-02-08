@@ -17,7 +17,7 @@ function serve() {
 	return {
 		writeBundle() {
 			if (server) return;
-			server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
+			server = require('child_process').spawn('pnpm', ['run', 'start', '--', '--dev'], {
 				stdio: ['ignore', 'inherit', 'inherit'],
 				shell: true
 			});
@@ -29,12 +29,14 @@ function serve() {
 }
 
 export default {
-	input: 'src/main.js',
+	input: 'src/main.mjs',
 	output: {
 		sourcemap: true,
-		format: 'iife',
+		format: 'es',
 		name: 'app',
-		file: 'public/build/bundle.js'
+		file: 'public/build/bundle.mjs',
+    esModule: true,
+    preferConst: true,
 	},
 	plugins: [
 		svelte({
