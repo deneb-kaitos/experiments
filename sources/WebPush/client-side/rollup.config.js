@@ -4,6 +4,8 @@ import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import css from 'rollup-plugin-css-only';
+// import injectProcessEnv from 'rollup-plugin-inject-process-env';
+import replace from "@rollup/plugin-replace";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -39,6 +41,9 @@ export default {
     preferConst: true,
 	},
 	plugins: [
+    replace({
+      'process.env.NODE_ENV': process.env.NODE_ENV
+    }),
 		svelte({
 			compilerOptions: {
 				// enable run-time checks when not in production
@@ -59,8 +64,11 @@ export default {
 			dedupe: ['svelte']
 		}),
 		commonjs(),
+    // injectProcessEnv({
+    //   NODE_ENV: process.env.NODE_ENV,
+    // }),
 
-		// In dev mode, call `npm run start` once
+    // In dev mode, call `npm run start` once
 		// the bundle has been generated
 		!production && serve(),
 

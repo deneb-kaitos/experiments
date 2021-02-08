@@ -1,65 +1,78 @@
 <script>
   import {
     onMount,
+    onDestroy,
   } from 'svelte';
   import SendIcon from './icons/SendIcon.svelte';
   import {
-    PermissionResults,
-  } from './constants/PermissionResults.mjs';
+    RegisterWebPushService,
+  } from './xstate/RegisterWebPushService.mjs';
   import {
-    ApplicationServerKeys,
-  } from './constants/ApplicationServerKeys.mjs';
+    isRequirementsCollectedGuard,
+  } from './xstate/guards/isRequirementsCollectedGuard.mjs';
   import {
-    urlBase64ToUint8Array,
-  } from './helpers/urlBase64ToUint8Array.mjs';
-
-  export let isServiceWorker = false;
-  let shouldEnableControls = true;
-  let swRegistration = null;
-  let permissionResult = null;
-  let subscriptionResult = null;
+    isRequirementsValidGuard,
+  } from './xstate/guards/isRequirementsValidGuard.mjs';
 
 
-  $: if (subscriptionResult) {
-    console.log('subscriptionResult:', subscriptionResult);
-  }
+  export let isServiceWorkerAvailable = null;
+  export let isPushManagerAvailable = null;
 
-  $: if (permissionResult === PermissionResults.granted) {
-    subscribeToPushNotifications();
-  }
+  const shouldEnableControls = false;
+  const RegisterWebPushServiceConfig = Object.freeze({
+    actions: {
+        logContext: (ctx) => {
+          console.log('logContext:', ctx);
+        },
+        resolveServiceWorkerAvailable: (ctx, evt) => {
+          registerWebPushService.send({
+            type: 'SetServiceWorkerAvailable',
+            payload: {
+              value: isServiceWorkerAvailable,
+            },
+          });
+        },
+        resolvePushManagerAvailable: (ctx, evt) => {
+          registerWebPushService.send({
+            type: 'SetPushManagerAvailable',
+            payload: {
+              value: isPushManagerAvailable,
+            },
+          });
+        },
+      },
+      activities: {},
+      delays: {},
+      guards: {
+        isRequirementsCollectedGuard,
+        isRequirementsValidGuard,
+      },
+      services: {},
+  });
 
-  $: shouldEnableControls = isServiceWorker && swRegistration && permissionResult === PermissionResults.granted;
-
-  $: if (swRegistration !== null) {
-    console.debug('swRegistration:', swRegistration);
-
-    askForPermission();
-  }
-
-  const subscribeToPushNotifications = async () => {
-    const subscribeOptions = {
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(ApplicationServerKeys.pk),
-    };
-
-    subscriptionResult = await swRegistration.pushManager.subscribe(subscribeOptions) ?? null;
-  };
-
-  const registerServiceWorker = async () => {
-    return navigator.serviceWorker.register('/service-worker.mjs');
-  };
-
-  const askForPermission = async () => {
-    permissionResult = await Notification.requestPermission();
-  };
+  let registerWebPushService = null;
 
   const handleSubmit = () => {
     console.debug('handleSubmit');
   };
 
   onMount(async () => {
-    if (isServiceWorker === true) {
-      swRegistration = await registerServiceWorker();
+    registerWebPushService = RegisterWebPushService(RegisterWebPushServiceConfig);
+
+    registerWebPushService
+      .onTransition((state) => {
+        console.log('.onTransition:', state.value);
+      })
+      .start();
+    
+    registerWebPushService.send('start');
+  });
+
+  onDestroy(() => {
+    if (registerWebPushService) {
+      registerWebPushService.stop();
+
+      registerWebPushService = null;
     }
   });
 </script>

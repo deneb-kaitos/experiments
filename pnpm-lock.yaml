@@ -15,11 +15,14 @@ importers:
   sources/WebPush/client-side:
     dependencies:
       sirv-cli: 1.0.11
+      xstate: 4.16.2
     devDependencies:
       '@rollup/plugin-commonjs': 17.1.0_rollup@2.38.5
       '@rollup/plugin-node-resolve': 11.1.1_rollup@2.38.5
+      '@rollup/plugin-replace': 2.3.4_rollup@2.38.5
       rollup: 2.38.5
       rollup-plugin-css-only: 3.1.0_rollup@2.38.5
+      rollup-plugin-inject-process-env: 1.3.1
       rollup-plugin-livereload: 2.0.0
       rollup-plugin-svelte: 7.1.0_rollup@2.38.5+svelte@3.32.1
       rollup-plugin-terser: 7.0.2_rollup@2.38.5
@@ -27,13 +30,16 @@ importers:
     specifiers:
       '@rollup/plugin-commonjs': ^17.0.0
       '@rollup/plugin-node-resolve': ^11.0.0
+      '@rollup/plugin-replace': ^2.3.4
       rollup: ^2.3.4
       rollup-plugin-css-only: ^3.1.0
+      rollup-plugin-inject-process-env: ^1.3.1
       rollup-plugin-livereload: ^2.0.0
       rollup-plugin-svelte: ^7.0.0
       rollup-plugin-terser: ^7.0.0
       sirv-cli: ^1.0.0
       svelte: ^3.0.0
+      xstate: ^4.16.2
 lockfileVersion: 5.2
 packages:
   /@babel/code-frame/7.12.13:
@@ -1008,6 +1014,16 @@ packages:
       rollup: ^1.20.0||^2.0.0
     resolution:
       integrity: sha512-zlBXR4eRS+2m79TsUZWhsd0slrHUYdRx4JF+aVQm+MI0wsKdlpC2vlDVjmlGvtZY1vsefOT9w3JxvmWSBei+Lg==
+  /@rollup/plugin-replace/2.3.4_rollup@2.38.5:
+    dependencies:
+      '@rollup/pluginutils': 3.1.0_rollup@2.38.5
+      magic-string: 0.25.7
+      rollup: 2.38.5
+    dev: true
+    peerDependencies:
+      rollup: ^1.20.0 || ^2.0.0
+    resolution:
+      integrity: sha512-waBhMzyAtjCL1GwZes2jaE9MjuQ/DQF2BatH3fRivUF3z0JBFrU0U6iBNC/4WR+2rLKhaAhPWDNPYp4mI6RqdQ==
   /@rollup/pluginutils/3.1.0_rollup@2.38.5:
     dependencies:
       '@types/estree': 0.0.39
@@ -2111,6 +2127,12 @@ packages:
       rollup: 1 || 2
     resolution:
       integrity: sha512-TYMOE5uoD76vpj+RTkQLzC9cQtbnJNktHPB507FzRWBVaofg7KhIqq1kGbcVOadARSozWF883Ho9KpSPKH8gqA==
+  /rollup-plugin-inject-process-env/1.3.1:
+    dependencies:
+      magic-string: 0.25.7
+    dev: true
+    resolution:
+      integrity: sha512-kKDoL30IZr0wxbNVJjq+OS92RJSKRbKV6B5eNW4q3mZTFqoWDh6lHy+mPDYuuGuERFNKXkG+AKxvYqC9+DRpKQ==
   /rollup-plugin-livereload/2.0.0:
     dependencies:
       livereload: 0.9.1
@@ -2465,6 +2487,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-GIyAXC2cB7LjvpgMt9EKS2ldqr0MTrORaleiOno6TweZ6r3TKtoFQWay/2PceJ3RuBasOHzXNn5Lrw1X0bEjqA==
+  /xstate/4.16.2:
+    dev: false
+    resolution:
+      integrity: sha512-EY39NNZnwM4tRYNmQAi1c2qHuZ1lJmuDpEo1jxiRcfS+1jPtKRAjGRLNx3fYKcK0ohW6mL41Wze3mdCF0SqavA==
   /yallist/4.0.0:
     dev: true
     resolution:

@@ -1,11 +1,10 @@
 import App from './App.svelte';
 
-const shouldEnable = () => ('serviceWorker' in navigator) && ('PushManager' in window);
-
 const app = new App({
   target: document.body,
   props: {
-    isServiceWorker: shouldEnable(),
+    isServiceWorkerAvailable: ('serviceWorker' in navigator),
+    isPushManagerAvailable: ('PushManager' in window),
   }
 });
 
