@@ -1,3 +1,2 @@
-export const isRequirementsValidGuard = (context) => {
-  return (context.isServiceWorkerAvailable === true) && (context.isPushManagerAvailable === true);
-};
+export const isRequirementsValidGuard = (context) => (context.isServiceWorkerAvailable === true) && (context.isPushManagerAvailable === true);
+

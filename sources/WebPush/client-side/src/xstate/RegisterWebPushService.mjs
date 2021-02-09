@@ -10,6 +10,9 @@ const RegisterWebPushMachine = Machine({
     context: {
       isServiceWorkerAvailable: null,
       isPushManagerAvailable: null,
+      pushNotificationPermissions: null,
+      serviceWorkerRegistration: null,
+      pushNotificationSubscription: null,
     },
     states: {
       initial: {
@@ -62,20 +65,88 @@ const RegisterWebPushMachine = Machine({
       checkRequirementsValid: {
         always: [
           {
-            target: 'final_OK',
+            target: 'askForPushNotificationPermissions',
             cond: {
               type: 'isRequirementsValidGuard',
             },
+            actions: ['askForPushNotificationPermissions'],
           },
           {
-            target: 'final_ER',
+            target: 'final_RequirementNotMet',
           },
         ],
+      },
+      askForPushNotificationPermissions: {
+        on: {
+          SetPushNotificationPermissions: {
+            target: 'checkPushNotificationPermissions',
+            actions: [
+              assign({
+                pushNotificationPermissions: (_, event) => event.payload.value,
+              }),
+              'logContext',
+            ],
+          },
+        },
+      },
+      checkPushNotificationPermissions: {
+        always: [
+          {
+            target: 'registerServiceWorker',
+            cond: {
+              type: 'isPushNotificationPermissionsGranted'
+            },
+          },
+          {
+            target: 'final_PushNotificationPermissionsDenied',
+          },
+        ],
+      },
+      registerServiceWorker: {
+        entry: ['registerServiceWorker'],
+        on: {
+          SetRegisterServiceWorker: {
+            target: 'checkIsServerWorkerRegistered',
+            actions: [
+              assign({
+                serviceWorkerRegistration: (_, event) => event.payload.value,
+              }),
+              'logContext',
+            ],
+          },
+        },
+      },
+      checkIsServerWorkerRegistered: {
+        always: [
+          {
+            target: 'subscribeToPushNotifications',
+            cond: {
+              type: 'isServerWorkerRegistered',
+            },
+          },
+        ],
+      },
+      subscribeToPushNotifications: {
+        entry: ['subscribeToPushNotifications'],
+        on: {
+          SetPushNotificationSubscription: {
+            target: 'final_OK',
+            actions: [
+              assign({
+                pushNotificationSubscription: (_, event) => event.payload.value,
+              }),
+              'logContext',
+            ],
+          },
+        },
       },
       final_OK: {
         type: 'final',
       },
-      final_ER: {
+      final_RequirementNotMet: {
+        type: 'final',
+      },
+      final_PushNotificationPermissionsDenied: {
         type: 'final',
       },
     },

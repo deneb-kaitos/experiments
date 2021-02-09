@@ -1,9 +1,10 @@
 const cacheName = 'webpush-cache-' + Date.now();
 const filesToCache = [
+  '/',
   '/favicon.png',
   '/global.css',
   '/index.html',
-  '/manifest.json',
+  '/app.webmanifest',
   '/service-worker.mjs',
   '/build/bundle.css',
   '/build/bundle.mjs',
@@ -45,4 +46,12 @@ self.addEventListener('fetch', e => {
       return response || fetch(e.request);
     })()
   );
+});
+
+self.addEventListener('push', e => {
+  if (e.data) {
+    self.registration.showNotification(e.data.text());
+  } else {
+    console.log('[push] w/ no data');
+  }
 });

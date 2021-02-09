@@ -74,7 +74,8 @@ svg {
 
 form,
 textarea,
-button {
+button,
+.askForPermissions {
   border-radius: 0.125vw;
 }
 
