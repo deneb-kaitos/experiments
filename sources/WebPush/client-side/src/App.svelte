@@ -261,7 +261,7 @@
     padding: 0 1vw;
 
     transform: translate(0, -8vh);
-    background-color: hsl(0deg 0% 70%);
+    background-color: hsl(75deg 98% 36%);
   }
 
   .askPermissionsText {
@@ -270,17 +270,20 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     font-size: 1.25rem;
     color: hsl(0deg 0% 96%);
   }
 
   .askPermissionsButton {
     grid-area: askPermissionsButton;
+    background-color: hsl(39deg 100% 50%);
   }
 
   .hideAskForPermissions {
     visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear 500ms, opacity 500ms;
   }
 </style>
 
