@@ -130,7 +130,7 @@ const RegisterWebPushMachine = Machine({
         entry: ['subscribeToPushNotifications'],
         on: {
           SetPushNotificationSubscription: {
-            target: 'final_OK',
+            target: 'checkPushNotificationSubscriptionValid',
             actions: [
               assign({
                 pushNotificationSubscription: (_, event) => event.payload.value,
@@ -140,14 +140,46 @@ const RegisterWebPushMachine = Machine({
           },
         },
       },
+      checkPushNotificationSubscriptionValid: {
+        always: [
+          {
+            target: 'final_OK',
+            cond: {
+              type: 'isPushNotificationSubscriptionValid',
+            },
+          },
+          {
+            target: 'final_PushNotificationDataInvalid',
+          }
+        ],
+      },
       final_OK: {
         type: 'final',
+        data: {
+          subscription: (context, event) => JSON.stringify(context.pushNotificationSubscription),
+          error: null,
+        },
       },
       final_RequirementNotMet: {
         type: 'final',
+        data: {
+          subscription: (context, event) => context.pushNotificationSubscription,
+          error: 'serviceWorker or PushManager do not exist',
+        },
       },
       final_PushNotificationPermissionsDenied: {
         type: 'final',
+        data: {
+          subscription: (context, event) => context.pushNotificationSubscription,
+          error: 'push notification denied',
+        },
+      },
+      final_PushNotificationDataInvalid: {
+        type: 'final',
+        data: {
+          subscription: (context, event) => context.pushNotificationSubscription,
+          error: 'push notification subscription is invalid',
+        },
       },
     },
   },

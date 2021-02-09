@@ -21,12 +21,17 @@
     isServerWorkerRegistered,
   } from './xstate/guards/isServerWorkerRegistered.mjs';
   import {
+    isPushNotificationSubscriptionValid,
+  } from './xstate/guards/isPushNotificationSubscriptionValid.mjs';
+  import {
     urlBase64ToUint8Array,
   } from './helpers/urlBase64ToUint8Array.mjs';
 
 
   export let isServiceWorkerAvailable = null;
   export let isPushManagerAvailable = null;
+
+  let subscriptionJSON = null;
 
   const loadServerKeys = async () => {
     const response = await fetch('/server-keys.json', {
@@ -42,7 +47,12 @@
     return await response.json();
   };
 
-  const shouldEnableControls = false;
+  $: shouldEnableControls = subscriptionJSON !== null;
+
+  $: if (subscriptionJSON) {
+    console.log(subscriptionJSON);
+  }
+
   const RegisterWebPushServiceConfig = Object.freeze({
     actions: {
         logContext: (ctx) => {
@@ -76,7 +86,8 @@
           const serviceWorkerRegistration = await navigator.serviceWorker.register('/service-worker.mjs', {
             scope: '/',
           });
-          await serviceWorkerRegistration.ready;
+
+          await navigator.serviceWorker.ready;
 
           registerWebPushService.send({
             type: 'SetRegisterServiceWorker',
@@ -109,6 +120,7 @@
         isRequirementsValidGuard,
         isPushNotificationPermissionsGranted,
         isServerWorkerRegistered,
+        isPushNotificationSubscriptionValid,
       },
       services: {},
   });
@@ -129,6 +141,15 @@
     registerWebPushService
       .onTransition((state) => {
         console.log('.onTransition:', state.value);
+      })
+      .onDone(({ data: { subscription, error } }) => {
+        console.log('.onDone:', subscription, error);
+
+        if (subscription === null && error !== null) {
+          console.error(error);
+        } else {
+          subscriptionJSON = subscription;
+        }
       })
       .start();
   });
@@ -257,6 +278,10 @@
   .askPermissionsButton {
     grid-area: askPermissionsButton;
   }
+
+  .hideAskForPermissions {
+    visibility: hidden;
+  }
 </style>
 
 <main>
@@ -284,7 +309,7 @@
       </button>
     </div>
   </form>
-  <div class='askForPermissions'>
+  <div class='askForPermissions' class:hideAskForPermissions={shouldEnableControls === true}>
     <div class='askPermissionsText'>Would you like to subscribe for notifications?</div>
     <button
       type='button'
