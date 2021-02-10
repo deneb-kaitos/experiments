@@ -1,0 +1,1 @@
+export const isServerWorkerRegistered = (context, event) => context.serviceWorkerRegistration !== null;
