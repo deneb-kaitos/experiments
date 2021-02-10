@@ -50,7 +50,7 @@ input:disabled {
   color: #ccc;
 }
 
-button {
+/* button {
   color: #333;
   background-color: #f4f4f4;
   outline: none;
@@ -66,16 +66,13 @@ button:not(:disabled):active {
 
 button:focus {
   border-color: #666;
-}
+} */
 
 svg {
   pointer-events: none;
 }
 
-form,
-textarea,
-button,
-.askForPermissions {
+:is(form,textarea,button,.roundedCorners) {
   border-radius: 0.125vw;
 }
 
@@ -83,4 +80,31 @@ button,
   filter: grayscale(1) opacity(0.5) blur(2px) !important;
   pointer-events: none !important;
   user-select: none !important;
+}
+
+@keyframes pulse {
+  0% {
+    filter: opacity(1.0);
+  }
+  50% {
+    filter: opacity(0.75);
+  }
+  100% {
+    filter: opacity(1.0);
+  }
+}
+
+button {
+  align-self: center;
+  color: hsl(0, 0%, 100%);
+  cursor: pointer;
+  font-size: 1.75rem;
+  font-variant: small-caps;
+  font-weight: 300;
+  line-height: 3vh;
+  margin: 0;
+  padding: 0.75vh;
+  text-transform: lowercase;
+  width: 5vw;
+  border: 1px solid transparent;
 }

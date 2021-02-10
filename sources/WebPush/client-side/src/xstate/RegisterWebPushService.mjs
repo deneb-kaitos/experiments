@@ -65,21 +65,50 @@ const RegisterWebPushMachine = Machine({
       checkRequirementsValid: {
         always: [
           {
-            target: 'askForPushNotificationPermissions',
+            target: 'requestExistingNotificationPermissions',
             cond: {
               type: 'isRequirementsValidGuard',
             },
-            actions: ['askForPushNotificationPermissions'],
           },
           {
             target: 'final_RequirementNotMet',
           },
         ],
       },
+      requestExistingNotificationPermissions: {
+        entry: ['requestExistingNotificationPermissions'],
+        on: {
+          SetExistingNotificationPermissions: {
+            target: 'checkExistingNotificationPermissions',
+            actions: [
+              assign({
+                pushNotificationPermissions: (_, event) => event.payload.value,
+              }),
+            ],
+          },
+        },
+      },
+      checkExistingNotificationPermissions: {
+        always: [
+          {
+            target: 'askForPushNotificationPermissions',
+            cond: 'isExistingNotificationPermissionDefault',
+          },
+          {
+            target: 'registerServiceWorker',
+            cond: 'isExistingNotificationPermissionGranted',
+          },
+          {
+            target: 'final_PushNotificationPermissionsDenied',
+            cond: 'isExistingNotificationPermissionDenied',
+          },
+        ],
+      },
       askForPushNotificationPermissions: {
+        // entry: ['pushNotificationPermissionsRequired'],
         on: {
           SetPushNotificationPermissions: {
-            target: 'checkPushNotificationPermissions',
+            target: 'checkExistingNotificationPermissions',
             actions: [
               assign({
                 pushNotificationPermissions: (_, event) => event.payload.value,

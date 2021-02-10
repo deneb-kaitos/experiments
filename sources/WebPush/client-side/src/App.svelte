@@ -4,7 +4,8 @@
     onDestroy,
   } from 'svelte';
   import SendIcon from './icons/SendIcon.svelte';
-  import AskPermissionsIcon from './icons/AskPermissionsIcon.svelte';
+  import AskForPermissions from './components/AskForPermissions.svelte';
+  import PermissionsDenied from './components/PermissionsDenied.svelte';
   import {
     RegisterWebPushService,
   } from './xstate/RegisterWebPushService.mjs';
@@ -24,14 +25,33 @@
     isPushNotificationSubscriptionValid,
   } from './xstate/guards/isPushNotificationSubscriptionValid.mjs';
   import {
+    isNotificationPermissionsDenied,
+  } from './xstate/guards/isNotificationPermissionsDenied.mjs';
+  import {
+    isExistingNotificationPermissionDefault,
+  } from './xstate/guards/isExistingNotificationPermissionDefault.mjs';
+  import {
+    isExistingNotificationPermissionDenied,
+  } from './xstate/guards/isExistingNotificationPermissionDenied.mjs';
+  import {
+    isExistingNotificationPermissionGranted,
+  } from './xstate/guards/isExistingNotificationPermissionGranted.mjs'
+  import {
     urlBase64ToUint8Array,
   } from './helpers/urlBase64ToUint8Array.mjs';
+  import {
+    PermissionResults,
+  } from './constants/PermissionResults.mjs';
 
 
   export let isServiceWorkerAvailable = null;
   export let isPushManagerAvailable = null;
 
   let subscriptionJSON = null;
+  let pushNotificationPermissions = window.Notification.permission;
+  let notificationPermissionListener = null;
+
+  $: shouldAskForPermissions = window.Notification.permission === PermissionResults.default || subscriptionJSON === null;
 
   const loadServerKeys = async () => {
     const response = await fetch('/server-keys.json', {
@@ -47,16 +67,10 @@
     return await response.json();
   };
 
-  $: shouldEnableControls = subscriptionJSON !== null;
-
-  $: if (subscriptionJSON) {
-    console.log(subscriptionJSON);
-  }
-
   const RegisterWebPushServiceConfig = Object.freeze({
     actions: {
-        logContext: (ctx) => {
-          console.log('logContext:', ctx);
+        logContext: (ctx, event) => {
+          console.log(`< ${event.type} >`, ctx);
         },
         resolveServiceWorkerAvailable: (ctx, evt) => {
           registerWebPushService.send({
@@ -71,6 +85,14 @@
             type: 'SetPushManagerAvailable',
             payload: {
               value: isPushManagerAvailable,
+            },
+          });
+        },
+        requestExistingNotificationPermissions: (ctx, evt) => {
+          registerWebPushService.send({
+            type: 'SetExistingNotificationPermissions',
+            payload: {
+              value: window.Notification.permission,
             },
           });
         },
@@ -103,8 +125,6 @@
           };
           const pushNotificationSubscription = await ctx.serviceWorkerRegistration.pushManager.subscribe(subscribeOptions);
 
-          console.log(JSON.stringify(pushNotificationSubscription));
-
           registerWebPushService.send({
             type: 'SetPushNotificationSubscription',
             payload: {
@@ -121,6 +141,10 @@
         isPushNotificationPermissionsGranted,
         isServerWorkerRegistered,
         isPushNotificationSubscriptionValid,
+        isNotificationPermissionsDenied,
+        isExistingNotificationPermissionDefault,
+        isExistingNotificationPermissionDenied,
+        isExistingNotificationPermissionGranted,
       },
       services: {},
   });
@@ -131,16 +155,31 @@
     console.debug('handleSubmit');
   };
 
-  const handleAskPermissionsButtonClick = () => {
-    registerWebPushService.send('start');
+  const handleAskPermissionsButtonClick = async () => {
+    registerWebPushService.send({
+      type: 'SetPushNotificationPermissions',
+      payload: {
+        value: (await Notification.requestPermission()),
+      },
+    });
   };
 
+  const handleNotificationPermissionChange = ({ target: state }) => {
+    pushNotificationPermissions = state;
+  }
+
   onMount(async () => {
+    notificationPermissionListener = await navigator.permissions.query({ name: 'notifications' }) ?? null;
+
+    if (notificationPermissionListener !== null) {
+      notificationPermissionListener.addEventListener('change', handleNotificationPermissionChange);
+    }
+
     registerWebPushService = RegisterWebPushService(RegisterWebPushServiceConfig);
 
     registerWebPushService
       .onTransition((state) => {
-        console.log('.onTransition:', state.value);
+        console.log(`[ ${state.value} ]`);
       })
       .onDone(({ data: { subscription, error } }) => {
         console.log('.onDone:', subscription, error);
@@ -152,9 +191,17 @@
         }
       })
       .start();
+    
+    registerWebPushService.send('start');
+
+    // console.log('window.Notification.permission', window.Notification.permission);
   });
 
   onDestroy(() => {
+    if (notificationPermissionListener !== null) {
+      notificationPermissionListener.removeEventListener('change', handleNotificationPermissionChange);
+    }
+
     if (registerWebPushService) {
       registerWebPushService.stop();
 
@@ -191,7 +238,7 @@
   label {
     align-items: center;
     display: flex;
-    font-size: 2.5rem;
+    font-size: 2.0rem;
     font-variant: small-caps;
     font-weight: 300;
     justify-content: center;
@@ -227,19 +274,7 @@
   }
 
   .submit {
-    align-self: center;
     background-color: hsl(219, 79%, 66%);
-    color: hsl(0, 0%, 100%);
-    cursor: pointer;
-    font-size: 1.75rem;
-    font-variant: small-caps;
-    font-weight: 300;
-    line-height: 3vh;
-    margin: 0;
-    padding: 0.75vh;
-    text-transform: lowercase;
-    width: 5vw;
-    border: 1px solid transparent;
   }
 
   .submit:active {
@@ -247,49 +282,11 @@
     box-shadow: inset 0px 0px 10px 10px hsl(33deg 79% 60%);
     border: 1px solid hsl(33deg 79% 36%);
   }
-
-  .askForPermissions {
-    display: grid;
-    grid-template-columns: 3fr 1fr;
-    grid-template-rows: 1fr;
-    grid-template-areas:
-      'askPermissionsText askPermissionsButton'
-    ;
-
-    height: 8vh;
-    width: 20vw;
-    padding: 0 1vw;
-
-    transform: translate(0, -8vh);
-    background-color: hsl(75deg 98% 36%);
-  }
-
-  .askPermissionsText {
-    grid-area: askPermissionsText;
-    padding: 1vh 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    font-size: 1.25rem;
-    color: hsl(0deg 0% 96%);
-  }
-
-  .askPermissionsButton {
-    grid-area: askPermissionsButton;
-    background-color: hsl(39deg 100% 50%);
-  }
-
-  .hideAskForPermissions {
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0s linear 500ms, opacity 500ms;
-  }
 </style>
 
 <main>
   <form id='web-push-experiment-form' on:submit|preventDefault|stopPropagation={handleSubmit}>
-    <label for='web-push-experiment-form'>Web Push Experiment {shouldEnableControls === false ? 'impossible' : ''}</label>
+    <label for='web-push-experiment-form'>Web Push Experiment {shouldAskForPermissions === true ? 'is yet impossible' : ''}</label>
     <div class='row'>
       <textarea
         class='message'
@@ -299,28 +296,24 @@
         required
         rows='10'
         type='text'
-        disabled={shouldEnableControls === false}
+        disabled={shouldAskForPermissions === true}
       ></textarea>
     </div>
     <div class='row'>
       <button
         type='submit'
         class='submit'
-        disabled={shouldEnableControls === false}
+        disabled={shouldAskForPermissions === true}
       >
         <SendIcon />
       </button>
     </div>
   </form>
-  <div class='askForPermissions' class:hideAskForPermissions={shouldEnableControls === true}>
-    <div class='askPermissionsText'>Would you like to subscribe for notifications?</div>
-    <button
-      type='button'
-      class='submit askPermissionsButton'
-      disabled={shouldEnableControls === true}
-      on:click|preventDefault|stopPropagation={handleAskPermissionsButtonClick}
-    >
-      <AskPermissionsIcon />
-    </button>
-  </div>
+  {#if pushNotificationPermissions === PermissionResults.default}
+    <AskForPermissions
+      on:askPermissions={handleAskPermissionsButtonClick}
+    >would you like to subscribe for notifications?</AskForPermissions>
+  {:else if pushNotificationPermissions === PermissionResults.denied}
+    <PermissionsDenied>notifications denied</PermissionsDenied>
+  {/if}
 </main>
